@@ -64,10 +64,7 @@ Key in relevant info via `Welcome to AI Based Student Monitoring System` page, t
     
 * Based on Eye Aspect Ratio measurement and face detection 
     * The student is categorised as engaged or disengaged every second based on their eye movements
-    ![image](https://user-images.githubusercontent.com/77436548/193460332-eca38717-5c85-4b14-a692-ca8125a2e34d.png)
-
     * `Disengaged` —— when the student’s face is undetected OR their eyes are closed/ partially closed for a fixed period of time (2 seconds).
-    ![image](https://user-images.githubusercontent.com/77436548/193460299-2d887644-c463-4606-b676-c9ec7506021a.png)
 
 ## 👨‍🏫 How It Works for Professor
 Receive information regarding student engagement via `AI Based Student Monitoring System` , where they get feedback on the amount of time students spent disengaged and the engagement level over time by querying their names, course, module, group.
