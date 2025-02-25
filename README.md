@@ -118,7 +118,7 @@ Below are some links that we have used as references throughout the project:
 
 1.   Begin by cloning this repository to your working directory:
 ```
-git clone https://github.com/Neo-Zenith/Project-ASES.git
+git clone https://github.com/jaanu42/studentmonitoring.git
 ```
 
 2.   Run `setup.bat`. This will install Python virtual environment and all the dependcies required.
