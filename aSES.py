@@ -35,8 +35,6 @@ def main():
     (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # facial landmark index for right eye
 
     print("Initiating video stream thread...")
-    vs = FileVideoStream(args["video"]).start()         # Start video stream thread
-    fileStream = True
     vs = VideoStream(src=0).start()
     fileStream = False
     time.sleep(1.0)
