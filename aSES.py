@@ -114,4 +114,4 @@ def main():
             LOOKDOWN_COUNTER += 1
             ear = 0
             
-            if LOOKDOWN_COUNTER >= EYE_AR
+            if LOOKDOWN_COUNTER >= EYE_AR:
