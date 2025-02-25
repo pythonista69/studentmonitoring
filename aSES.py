@@ -234,10 +234,6 @@ module = st.text_input("Subject: ")
 duration = st.slider("Duration in minutes: ", 1, 120, 1)
 submit = st.button("Submit")
 
-if submit:
-    main()
-    
-st.stop()
 shape_predictor_file = st.file_uploader("Upload Shape Predictor", type=["dat"])
 
 if submit:
@@ -250,3 +246,4 @@ if submit:
         main("shape_predictor_68_face_landmarks.dat")
     else:
         st.error("Please upload the shape predictor file.")
+st.stop()
