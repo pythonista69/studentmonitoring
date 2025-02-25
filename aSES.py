@@ -34,7 +34,7 @@ def main():
     time.sleep(1.0)  # Allow time for the camera to warm up
     print("Video stream started.")
     # Check if the video stream is opened
-    if vs is None:
+    if vs is None or not vs.isOpened():
         print("Error: Could not open video stream.")
         return  # Exit the main function if the video stream cannot be opened
 
