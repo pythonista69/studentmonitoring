@@ -115,3 +115,95 @@ def main():
             ear = 0
             
             if LOOKDOWN_COUNTER >= EYE_AR:
+                disengaged = True           # set state to disengaged
+                TOTAL += 1
+
+
+            if disengaged:
+                engaged_status.append(0)
+                cv2.putText(frame, "Disengaged",(10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+            else:
+                engaged_status.append(1)
+                cv2.putText(frame, "Engaged",(10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+            cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+            cv2.putText(frame, "Total: {:.2f}".format(TOTAL/fps),(300, 70),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+
+        cv2.imshow("Frame", frame)      # show the frame
+        cv2.waitKey(1) & 0xFF
+
+        # check if time is up
+        if int(time.time()) - start == duration * 60:
+            # send a POST request to server to update data
+            post(name, course, engaged_status, duration * 60, fps, module, group, matric_id)
+            break
+
+    # cleaning up
+    cv2.destroyAllWindows()
+    vs.stop()
+
+
+def getFPS():
+    video = cv2.VideoCapture(0)
+    num_frames = 60
+    start = time.time()
+    
+    for i in range(0, num_frames):
+        rst, frame = video.read()
+
+    end = time.time()
+    seconds = end - start
+    video.release()
+    return float(num_frames / seconds)
+
+
+def post(name, course, engaged_status, time, fps, module, group, matric_id):
+    json = {
+        "name": name,
+        "matric_id": matric_id,
+        "course": course,
+        "module": module,
+        "group": group,
+        "engaged_status": engaged_status,
+        "time": time,
+        "fps": fps,
+    }
+    requests.post('http://127.0.0.1:8000/api/v1/engagement/upload', json=json)
+
+
+def eye_aspect_ratio(eye):
+	A = dist.euclidean(eye[1], eye[5])  # compute the euclidean distances between the two sets of
+	B = dist.euclidean(eye[2], eye[4])  # vertical eye landmarks (x, y)-coordinates
+	C = dist.euclidean(eye[0], eye[3])  # horizontal eye landmark (x, y)-coordinates
+	
+	ear = (A + B) / (2.0 * C)           # compute the eye aspect ratio
+	return ear
+
+
+
+html_string = """
+<h1> Welcome to aSES </h1>
+"""
+st.markdown(html_string, unsafe_allow_html=True)
+name = st.text_input("Name: ")
+matric_id = st.text_input("Matric no: ")
+course = st.text_input("Course: ")
+group = st.text_input("Group: ")
+module = st.text_input("Module: ")
+duration = st.slider("Duration in minutes: ", 1, 120, 1)
+submit = st.button("Submit")
+
+if submit:
+    main()
+    
+st.stop()
+
+
+
+
+                
