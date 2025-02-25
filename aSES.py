@@ -14,7 +14,7 @@ import os
 global name, course, group, module, duration, matric_id
 
 
-def main(shape_predictor_path):
+def main():
     # construct the argument parse and parse the arguments
 	 # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
