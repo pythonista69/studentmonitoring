@@ -29,7 +29,7 @@ def main():
 
     print("Intiating facial landmark predictor...")                 # for debug purpose
     detector = dlib.get_frontal_face_detector()                   # dlib's face detector (HOG-based)
-    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat)       # facial landmark predictor
+    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")       # facial landmark predictor
 
     (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]   # facial landmark index for left eye
     (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # facial landmark index for right eye
