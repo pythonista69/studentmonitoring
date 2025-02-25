@@ -10,21 +10,19 @@ import dlib
 import cv2
 import streamlit as st
 import requests
-import os
+
 global name, course, group, module, duration, matric_id
 
 
 def main():
     # construct the argument parse and parse the arguments
-	 # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--shape-predictor", required=True,
         help="path to facial landmark predictor")
     ap.add_argument("-v", "--video", type=str, default="",
         help="path to input video file")
     args = vars(ap.parse_args())
-     
-   
+
     fps = getFPS()                      # get the frames per second of the video device
     EYE_AR_THRESH = 1                   # threshold for which the eye aspect ratio is counted as disengaged
     EYE_AR_CONSEC_FRAMES = 2 * fps      # number of consecutive frames before user is counted as disengaged
@@ -33,14 +31,10 @@ def main():
     # counter resets to 0 when current fram meets EAR threshold
     COUNTER = 0         
     TOTAL = 0                           # total number of frames counted as disengaged
-    disengaged = False
-    LOOKDOWN_COUNTER = 0
-    engaged_status = []
-    print("Intiating facial landmark predictor...")   # for debug purpose
-    
-    
+
+    print("Intiating facial landmark predictor...")                 # for debug purpose
     detector = dlib.get_frontal_face_detector()                     # dlib's face detector (HOG-based)
-    predictor = dlib.shape_predictor(args["shape_predictor"])        # facial landmark predictor
+    predictor = dlib.shape_predictor(args["shape_predictor"])       # facial landmark predictor
 
     (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]   # facial landmark index for left eye
     (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # facial landmark index for right eye
@@ -229,17 +223,18 @@ def eye_aspect_ratio(eye):
 
 
 html_string = """
-<h1> Welcome to AI Based Student Monitoring System </h1>
+<h1> Welcome to aSES </h1>
 """
 st.markdown(html_string, unsafe_allow_html=True)
 name = st.text_input("Name: ")
-matric_id = st.text_input("ID no: ")
-course = st.text_input("Branch: ")
-group = st.text_input("Section: ")
-module = st.text_input("Subject: ")
+matric_id = st.text_input("Matric no: ")
+course = st.text_input("Course: ")
+group = st.text_input("Group: ")
+module = st.text_input("Module: ")
 duration = st.slider("Duration in minutes: ", 1, 120, 1)
 submit = st.button("Submit")
 
 if submit:
     main()
+    
 st.stop()
