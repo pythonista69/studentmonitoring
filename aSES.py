@@ -231,12 +231,10 @@ matric_id = st.text_input("ID no: ")
 course = st.text_input("Branch: ")
 group = st.text_input("Section: ")
 module = st.text_input("Subject: ")
-Gender=st.radio("Pick your Gender",["male","female"])
-submit=st.button("Click Me")
+duration = st.slider("Duration in minutes: ", 1, 120, 1)
+submit = st.button("Submit")
 
 if submit:
-    with open("user_data.txt", "w") as f:
-        f.write(f"{name},{Gender}")  # Save name and gender
     main()
     
 st.stop()
