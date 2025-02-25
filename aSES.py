@@ -16,12 +16,7 @@ global name, course, group, module, duration, matric_id
 
 def main():
     # construct the argument parse and parse the arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--shape-predictor", required=True,
-        help="path to facial landmark predictor")
-    ap.add_argument("-v", "--video", type=str, default="",
-        help="path to input video file")
-    args = vars(ap.parse_args())
+    
 
     fps = getFPS()                      # get the frames per second of the video device
     EYE_AR_THRESH = 1                   # threshold for which the eye aspect ratio is counted as disengaged
@@ -33,8 +28,8 @@ def main():
     TOTAL = 0                           # total number of frames counted as disengaged
 
     print("Intiating facial landmark predictor...")                 # for debug purpose
-    detector = dlib.get_frontal_face_detector()                     # dlib's face detector (HOG-based)
-    predictor = dlib.shape_predictor(args["shape_predictor"])       # facial landmark predictor
+    detector = dlib.get_frontal_face_detector()                   # dlib's face detector (HOG-based)
+    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat)       # facial landmark predictor
 
     (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]   # facial landmark index for left eye
     (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # facial landmark index for right eye
