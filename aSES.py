@@ -16,6 +16,13 @@ global name, course, group, module, duration, matric_id
 
 def main(shape_predictor_path):
     # construct the argument parse and parse the arguments
+	 # construct the argument parse and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-p", "--shape-predictor", required=True,
+        help="path to facial landmark predictor")
+    ap.add_argument("-v", "--video", type=str, default="",
+        help="path to input video file")
+    args = vars(ap.parse_args())
      
    
     fps = getFPS()                      # get the frames per second of the video device
@@ -30,11 +37,10 @@ def main(shape_predictor_path):
     LOOKDOWN_COUNTER = 0
     engaged_status = []
     print("Intiating facial landmark predictor...")   # for debug purpose
-
+    
     
     detector = dlib.get_frontal_face_detector()                     # dlib's face detector (HOG-based)
-   
-    predictor = dlib.shape_predictor(shape_predictor_path)      # facial landmark predictor
+    predictor = dlib.shape_predictor(args["shape_predictor"])        # facial landmark predictor
 
     (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]   # facial landmark index for left eye
     (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # facial landmark index for right eye
@@ -234,16 +240,6 @@ module = st.text_input("Subject: ")
 duration = st.slider("Duration in minutes: ", 1, 120, 1)
 submit = st.button("Submit")
 
-shape_predictor_file = st.file_uploader("Upload Shape Predictor", type=["dat"])
-
 if submit:
-    if shape_predictor_file is not None:
-        # Save the uploaded file to a temporary location
-        with open("shape_predictor_68_face_landmarks.dat", "wb") as f:
-            f.write(shape_predictor_file.getbuffer())
-        
-        # Call the main function with the path to the saved file
-        main("shape_predictor_68_face_landmarks.dat")
-    else:
-        st.error("Please upload the shape predictor file.")
+    main()
 st.stop()
