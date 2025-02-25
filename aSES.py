@@ -16,7 +16,13 @@ global name, course, group, module, duration, matric_id
 
 def main():
     # construct the argument parse and parse the arguments
-    
+    # construct the argument parse and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-p", "--shape-predictor", required=True,
+        help="path to facial landmark predictor")
+    ap.add_argument("-v", "--video", type=str, default="",
+        help="path to input video file")
+    args = vars(ap.parse_args())
 
     fps = getFPS()                      # get the frames per second of the video device
     EYE_AR_THRESH = 1                   # threshold for which the eye aspect ratio is counted as disengaged
@@ -35,6 +41,8 @@ def main():
     (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # facial landmark index for right eye
 
     print("Initiating video stream thread...")
+    vs = FileVideoStream(args["video"]).start()         # Start video stream thread
+    fileStream = True
     vs = VideoStream(src=0).start()
     fileStream = False
     time.sleep(1.0)
