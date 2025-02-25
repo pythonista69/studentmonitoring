@@ -26,7 +26,7 @@ def main(shape_predictor_path):
     # counter resets to 0 when current fram meets EAR threshold
     COUNTER = 0         
     TOTAL = 0                           # total number of frames counted as disengaged
-     disengaged = False
+    disengaged = False
     LOOKDOWN_COUNTER = 0
     engaged_status = []
     print("Intiating facial landmark predictor...")   # for debug purpose
