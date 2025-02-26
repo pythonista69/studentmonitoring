@@ -53,7 +53,7 @@ def main():
     while True:
         # if this is a file video stream, then we need to check if
         # there any more frames left in the buffer to process
-        if fileStream:
+        if fileStream and not vs.more():
             break
 
         # grab the frame from the threaded video file stream, resize
