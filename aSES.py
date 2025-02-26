@@ -34,8 +34,8 @@ def main():
     print("Initiating video stream thread...")
     vs = FileVideoStream("4584814-hd_1280_720_25fps.mp4").start()         # Start video stream thread
     fileStream = True
-    vs = VideoStream(src=0).start()
-    fileStream = False
+    # vs = VideoStream(src=0).start()
+    # fileStream = False
     time.sleep(1.0)
 
     _sum = 0                            # sum variable for initial calibration for EAR threshold
@@ -53,7 +53,7 @@ def main():
     while True:
         # if this is a file video stream, then we need to check if
         # there any more frames left in the buffer to process
-        if fileStream and not vs.more():
+        if fileStream:
             break
 
         # grab the frame from the threaded video file stream, resize
