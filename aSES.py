@@ -1,4 +1,4 @@
-# Import the necessary packages
+# import the necessary packages
 from scipy.spatial import distance as dist
 from imutils.video import FileVideoStream
 from imutils.video import VideoStream
@@ -13,108 +13,144 @@ import requests
 
 global name, course, group, module, duration, matric_id
 
+
 def main():
-    # Get the frames per second of the video device
-    fps = getFPS()                      
-    EYE_AR_THRESH = 1                   # Threshold for which the eye aspect ratio is counted as disengaged
-    EYE_AR_CONSEC_FRAMES = 2 * fps      # Number of consecutive frames before user is counted as disengaged
+    # construct the argument parse and parse the arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-p", "--shape-predictor", required=True,
+        help="path to facial landmark predictor")
+    ap.add_argument("-v", "--video", type=str, default="",
+        help="path to input video file")
+    args = vars(ap.parse_args())
 
+    fps = getFPS()                      # get the frames per second of the video device
+    EYE_AR_THRESH = 1                   # threshold for which the eye aspect ratio is counted as disengaged
+    EYE_AR_CONSEC_FRAMES = 2 * fps      # number of consecutive frames before user is counted as disengaged
+
+    # counter counts the number of consecutive frames not meeting EAR threshold
+    # counter resets to 0 when current fram meets EAR threshold
     COUNTER = 0         
-    TOTAL = 0                           # Total number of frames counted as disengaged
+    TOTAL = 0                           # total number of frames counted as disengaged
 
-    print("Initiating facial landmark predictor...")  # For debug purpose
-    detector = dlib.get_frontal_face_detector()      # dlib's face detector (HOG-based)
-    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")  # Facial landmark predictor
+    print("Intiating facial landmark predictor...")                 # for debug purpose
+    detector = dlib.get_frontal_face_detector()                     # dlib's face detector (HOG-based)
+    predictor = dlib.shape_predictor()       # facial landmark predictor
 
-    (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]   # Facial landmark index for left eye
-    (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # Facial landmark index for right eye
+    (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]   # facial landmark index for left eye
+    (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]  # facial landmark index for right eye
 
     print("Initiating video stream thread...")
-    vs = VideoStream(src=0).start()  # Start video stream thread
-    time.sleep(1.0)  # Allow time for the camera to warm up
-    print("Video stream started.")
-    # Check if the video stream is opened
-    if vs is None or not vs.isOpened():
-        print("Error: Could not open video stream.")
-        return  # Exit the main function if the video stream cannot be opened
+    vs = FileVideoStream(args["video"]).start()         # Start video stream thread
+    fileStream = True
+    vs = VideoStream(src=0).start()
+    fileStream = False
+    time.sleep(1.0)
 
-    _sum = 0                            # Sum variable for initial calibration for EAR threshold
-    _counter = int(5 * fps)             # Number of frames for calibration (5 seconds) 
-    disengaged = False                  # Initiate engagement state to be 'engaged'
-    LOOKDOWN_COUNTER = 0                # Counts consecutive frames where eyes cannot be detected
-    start = 0                           # Time since epoch for when calibration completes (and recording starts)
-    engaged_status = []                 # List of binary classification of engagement status
+    _sum = 0                            # sum variable for initial calibration for EAR threshold
+    _counter = int(5 * fps)             # number of frames for calibration (5 seconds) 
+    disengaged = False                  # initiate engagement state to be 'engaged'
+    # LOOKDOWN_COUNTER counts the number of consecutive frames where eyes cannot be detected
+    # resets to 0 when current fram meets EAR threshold
+    LOOKDOWN_COUNTER = 0                
+    start = 0                           # time since epoch for when calibration completes (and recording starts)
+    # list of binary classification of engagement status
+    # each entry in the list represents engagement status on 1 frame
+    engaged_status = []   
 
-    # Iterate through all frames until video stops              
+    # iterate through all frames until video stops              
     while True:
-        # Grab the frame from the threaded video file stream
-        frame = vs.read()
-        
-        # Check if the frame is None
-        if frame is None:
-            print("Error: Could not read frame from video stream.")
-            continue  # Skip this iteration if the frame is None
+        # if this is a file video stream, then we need to check if
+        # there any more frames left in the buffer to process
+        if fileStream and not vs.more():
+            break
 
-        frame = imutils.resize(frame, width=450)  # Resize the frame
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
-        rects = detector(gray, 0)  # Detect faces in the grayscale frame
+        # grab the frame from the threaded video file stream, resize
+        # it, and convert it to grayscale
+        frame = vs.read()
+        frame = imutils.resize(frame, width=450)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        rects = detector(gray, 0)       # detect faces in the grayscale frame
         
         if len(rects) != 0:
             LOOKDOWN_COUNTER = 0
-            shape = predictor(gray, rects[0])  # Determine facial landmarks
+            # determine the facial landmarks for the face region, then
+            # convert the facial landmark (x, y)-coordinates to a NumPy array
+            shape = predictor(gray, rects[0])
             shape = face_utils.shape_to_np(shape)
+            # extract the left and right eye coordinates, then use the
+            # coordinates to compute the eye aspect ratio for both eyes
             leftEye = shape[lStart:lEnd]
             rightEye = shape[rStart:rEnd]
             leftEAR = eye_aspect_ratio(leftEye)
             rightEAR = eye_aspect_ratio(rightEye)
-            ear = (leftEAR + rightEAR) / 2.0  # Average the eye aspect ratio
+            # average the eye aspect ratio together for both eyes
+            ear = (leftEAR + rightEAR) / 2.0
 
-            # Run this section if calibration has not been done
+            # run this section if calibration has not been done
             if EYE_AR_THRESH == 1:
                 if _counter > 0:
                     _sum += ear
+                    
                     _counter -= 1
                 else:
+                    # calibrated the user specific EAR threshold 
                     EYE_AR_THRESH = _sum / int(5 * fps) * 0.9
                     start = int(time.time())
             
-            # Only run this section once calibration completes
+            # only run this section once calibration completes
             if _counter == 0:       
+                # compute the convex hull for the left and right eye, then
+                # visualize each of the eyes
                 leftEyeHull = cv2.convexHull(leftEye)
                 rightEyeHull = cv2.convexHull(rightEye)
                 cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
                 cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
                 
+                # if more than the set threshold frames
+                # classify as disengaged
+                # check current frame whether user EAR meets the threshold
                 if COUNTER >= EYE_AR_CONSEC_FRAMES:
                     disengaged = True
                     TOTAL += 1
                     
                     if ear >= EYE_AR_THRESH:
-                        COUNTER = 0
+                        COUNTER = 0         # resets counter if meets EAR threshold
                     else:
-                        COUNTER += 1
+                        COUNTER += 1        # incremets counter otherwise
+
+                # if less than the set threshold frames
+                # classify as still engaged
+                # check if current frame meets EAR threshold
                 elif COUNTER < EYE_AR_CONSEC_FRAMES:
                     disengaged = False
                     if ear < EYE_AR_THRESH:
-                        COUNTER += 1
+                        COUNTER += 1         # increments counter if does not meet EAR threshold
                     else:
-                        COUNTER = 0
+                        COUNTER = 0          # resets counter otherwise
                
+                # classify current frame as engaged or disengaged
                 if disengaged:
-                    engaged_status.append(0)  # 0 as disengaged
-                    cv2.putText(frame, "Disengaged", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                    engaged_status.append(0)                            # 0 as disengaged
+                    cv2.putText(frame, "Disengaged",(10, 30),           # visual output
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 else:
-                    engaged_status.append(1)  # 1 as engaged
-                    cv2.putText(frame, "Engaged", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                    engaged_status.append(1)                            # 1 as engaged
+                    cv2.putText(frame, "Engaged",(10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
-                cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-                cv2.putText(frame, "Total: {:.2f}".format(TOTAL/fps), (300, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+                # visual output for current frame EAR and total number of disengaged frames
+                cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+                cv2.putText(frame, "Total: {:.2f}".format(TOTAL/fps),(300, 70),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
 
+        # execution will only run this when eyes are not detected
         elif EYE_AR_THRESH != 1:
-            LOOKDOWN_COUNTER += 1
-            ear = 0
+            LOOKDOWN_COUNTER += 1           # increment counter by 1
+            ear = 0                         # set EAR to 0
             
-            if LOOKDOWN_COUNTER >= EYE_AR:
+            # if more than set threshold number of frames
+            if LOOKDOWN_COUNTER >= EYE_AR_CONSEC_FRAMES:
                 disengaged = True           # set state to disengaged
                 TOTAL += 1
 
@@ -187,14 +223,14 @@ def eye_aspect_ratio(eye):
 
 
 html_string = """
-<h1> Welcome to aSES </h1>
+<h1>Welcome to AI Based Student Monitoring System</h1>
 """
 st.markdown(html_string, unsafe_allow_html=True)
 name = st.text_input("Name: ")
-matric_id = st.text_input("Matric no: ")
-course = st.text_input("Course: ")
-group = st.text_input("Group: ")
-module = st.text_input("Module: ")
+matric_id = st.text_input("ID No: ")
+course = st.text_input("Branch:")
+group = st.text_input("Section:")
+module = st.text_input("Subject Code: ")
 duration = st.slider("Duration in minutes: ", 1, 120, 1)
 submit = st.button("Submit")
 
@@ -202,8 +238,3 @@ if submit:
     main()
     
 st.stop()
-
-
-
-
-                
