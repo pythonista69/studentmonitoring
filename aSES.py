@@ -17,7 +17,7 @@ global name, course, group, module, duration, matric_id
 def main():
     # fps = getFPS()                      # get the frames per second of the video device
     EYE_AR_THRESH = 1                   # threshold for which the eye aspect ratio is counted as disengaged
-    EYE_AR_CONSEC_FRAMES = 2 * fps      # number of consecutive frames before user is counted as disengaged
+    EYE_AR_CONSEC_FRAMES = 2 * 60      # number of consecutive frames before user is counted as disengaged
 
     # counter counts the number of consecutive frames not meeting EAR threshold
     # counter resets to 0 when current fram meets EAR threshold
