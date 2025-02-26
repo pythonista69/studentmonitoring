@@ -162,8 +162,7 @@ def main():
             cv2.putText(frame, "Total: {:.2f}".format(TOTAL/fps),(300, 70),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
 
-        cv2.imshow("Frame", frame)      # show the frame
-        cv2.waitKey(1) & 0xFF
+        st.image(frame)
 
         # check if time is up
         if int(time.time()) - start == duration * 60:
@@ -171,8 +170,6 @@ def main():
             post(name, course, engaged_status, duration * 60, fps, module, group, matric_id)
             break
 
-    # cleaning up
-    cv2.destroyAllWindows()
     vs.stop()
 
 
